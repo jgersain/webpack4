@@ -4,6 +4,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const webpack = require('webpack')
 const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const TersetJSPlugin = require('terser-webpack-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
   entry: { 
@@ -11,9 +14,15 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'js/[name].js',
+    filename: 'js/[name].[hash].js',
     publicPath: 'http://localhost:3001/',
     chunkFilename: 'js/[id].[chunkhash].js'
+  },
+  optimization: {
+    minimizer: [
+      new TersetJSPlugin(),
+      new OptimizeCSSAssetsPlugin()
+    ]
   },
   module: {
     rules: [
@@ -37,6 +46,8 @@ module.exports = {
           loader: 'url-loader',
           options: {
             limit: 1000,
+            name: '[hash].[ext]',
+            outputPath: 'assets'
           }
         },
       }
@@ -44,8 +55,8 @@ module.exports = {
   }, 
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/[name].css',
-      chunkFileName: 'css/[id].css'
+      filename: 'css/[name].[hash].css',
+      chunkFileName: 'css/[id].[hash].css'
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public/index.html')
@@ -57,6 +68,9 @@ module.exports = {
       filepath: path.resolve(__dirname, 'dist/js/*.dll.js'),
       outputPath: 'js',
       publicPath: 'http://localhost:3001/js'
+    }),
+    new CleanWebpackPlugin({
+      cleanOnceBeforeBuildPatterns: ['**/app.*']
     })
   ]
 }
